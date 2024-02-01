@@ -9,7 +9,7 @@ async def fetch_page(session, url):
     async with session.get(url) as response:
         return await response.text()
 
-@backoff.on_exception(backoff.expo, aiohttp.ClientError, max_tries=5)
+@backoff.on_exception(backoff.expo, aiohttp.ClientError, max_tries=1)
 async def scrape_nkiri_data_async(url, num_pages=3):
     movies_data = []
 
