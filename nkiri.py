@@ -10,7 +10,7 @@ async def fetch_page(session, url):
         return await response.text()
 
 @backoff.on_exception(backoff.expo, aiohttp.ClientError, max_tries=1)
-async def scrape_nkiri_data_async(url, num_pages=3):
+async def scrape_nkiri_data_async(url, num_pages=23):
     movies_data = []
 
     async with aiohttp.ClientSession() as session:
@@ -51,10 +51,10 @@ async def nkiri_data_async(session, link, title, image_url):
     if data_block:
         download_link_element = data_block.find('a', class_='elementor-button elementor-button-link elementor-size-md')
         download_link = download_link_element.get('href') if download_link_element else None
-        print(link)
-        print(title)
-        print(image_url)
-        print(download_link)
+        # print(link)
+        # print(title)
+        # print(image_url)
+        # print(download_link)
     else:
         print("Data block with data-id '3f2169e' not found.")
 
@@ -62,7 +62,7 @@ async def process_movie_data_async(movies_data):
     async with aiohttp.ClientSession() as session:
         tasks = [nkiri_data_async(session, link, title, image_url) for link, title, image_url in movies_data]
         await asyncio.gather(*tasks)
-
+print("DONE")
 # Example usage
 nkiri_url = "https://nkiri.com/category/international/"
 movies_data = asyncio.run(scrape_nkiri_data_async(nkiri_url))
