@@ -10,7 +10,7 @@ async def fetch_page(session, url):
         return await response.text()
 
 @backoff.on_exception(backoff.expo, aiohttp.ClientError, max_tries=1)
-async def scrape_nkiri_data_async(url, num_pages=4):
+async def scrape_nkiri_data_async(url, num_pages=74):
     movies_data = []
 
     async with aiohttp.ClientSession() as session:
@@ -36,30 +36,27 @@ async def scrape_nkiri_data_async(url, num_pages=4):
                 image_element = movie.find('img', class_='attachment-full size-full wp-post-image')
                 image_url = image_element.get('src') if image_element else "N/A"
 
-                movies_data.append((link, title, image_url))
+                genre_links = movie.find_all('a', rel='tag')
+                genres = [genre.text for genre in genre_links]
+
+                movies_data.append((link, title, image_url, genres))
 
     return movies_data
 
 @backoff.on_exception(backoff.expo, aiohttp.ClientError, max_tries=5)
-async def nkiri_data_async(session, link, title, image_url):
+async def nkiri_data_async(session, link, title, image_url, genres):
     async with session.get(link) as response:
         page_content = await response.text()
 
     soup = BeautifulSoup(page_content, "html.parser")
-    data_block = soup.find('div', {'data-id': '3f2169e'})
+    download_link_element = soup.find('a', class_='elementor-button elementor-button-link elementor-size-md')
+    download_link = download_link_element.get('href') if download_link_element else None
 
-    if data_block:
-        download_link_element = data_block.find('a', class_='elementor-button elementor-button-link elementor-size-md')
-        download_link = download_link_element.get('href') if download_link_element else None
-        return {'Link': link, 'Title': title, 'Image URL': image_url, 'Download Link': download_link}
-    else:
-        print(f"Data block with data-id '3f2169e' not found for link: {link}")
-        # Return None for entries where data is not found
-        return None
+    return {'Link': link, 'Title': title, 'Image URL': image_url, 'Genres': genres, 'Download Link': download_link}
 
 async def process_movie_data_async(movies_data):
     async with aiohttp.ClientSession() as session:
-        tasks = [nkiri_data_async(session, link, title, image_url) for link, title, image_url in movies_data]
+        tasks = [nkiri_data_async(session, link, title, image_url, genres) for link, title, image_url, genres in movies_data]
         # Filter out entries where any of the required fields is not found
         return [entry for entry in await asyncio.gather(*tasks) if entry is not None]
 
