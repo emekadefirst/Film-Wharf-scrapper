@@ -15,7 +15,7 @@ url = 'https://filmwharf.vercel.app/add.html'
 driver.get(url)
 
 time.sleep(10)
-file_path = 'data020224-1211.csv'
+file_path = 'nkiri_movies_data.csv'
 df = pd.read_csv(file_path)
 
 for _, row in df.iterrows():

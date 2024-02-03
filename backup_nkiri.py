@@ -52,3 +52,12 @@ def nkiri_data(link, title, image_url):
 nkiri_url = "https://nkiri.com/category/international/"
 movies_data = scrape_nkiri_data(nkiri_url)
 process_movie_data(movies_data)
+processed_data = [entry for entry in process_movie_data if entry is not None]
+
+# Convert the processed data to a Pandas DataFrame
+df = pd.DataFrame(processed_data)
+
+# Save the DataFrame to a CSV file
+df.to_csv('nkiri_movies_data.csv', index=False)
+
+print("CSV file saved successfully.")
